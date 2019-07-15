@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"syscall"
 )
 
 func handleConnection(conn net.Conn) {
@@ -12,8 +14,9 @@ func handleConnection(conn net.Conn) {
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
-			if err != io.EOF {
-				log.Panicln(err)
+			if err != io.EOF && err != syscall.ECONNRESET {
+				//log.Panicln(err)
+				log.Println(err)
 			}
 			conn.Close()
 			return
@@ -22,7 +25,10 @@ func handleConnection(conn net.Conn) {
 		buf = buf[0:n]
 		n, err = conn.Write(buf)
 		if err != nil {
-			log.Panicln(err)
+			if !(err == syscall.EPIPE || err == syscall.ECONNRESET) {
+				//log.Panicln(err)
+				log.Println(err)
+			}
 		}
 		log.Printf("write %v byte to %v", n, conn.RemoteAddr().String())
 		buf = buf[0:10]
@@ -35,6 +41,7 @@ func main() {
 		// handle error
 		log.Panicln(err)
 	}
+	fmt.Println("Listen on 8080....")
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
