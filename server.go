@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -36,6 +37,7 @@ func handleConnection(conn net.Conn) {
 }
 
 func main() {
+	flag.Parse()
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		// handle error
